@@ -4,28 +4,22 @@ import argparse
 import cv2
 
 # Image Path
-imagePath = 'grey.jpg'
-
 # construct the argument parser and parse the arguments
-# ap = argparse.ArgumentParser()
-# ap.add_argument("-i", "--image", type=str, required=True,
-# 	help="path to input black and white image")
-# ap.add_argument("-p", "--prototxt", type=str, required=True,
-# 	help="path to Caffe prototxt file")
-# ap.add_argument("-m", "--model", type=str, required=True,
-# 	help="path to Caffe pre-trained model")
-# ap.add_argument("-c", "--points", type=str, required=True,
-# 	help="path to cluster center points")
-# args = vars(ap.parse_args())
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--image", type=str, required=True,
+	help="path to input black and white image")
+ap.add_argument("-p", "--prototxt", type=str, required=True,
+	help="path to Caffe prototxt file")
+ap.add_argument("-m", "--model", type=str, required=True,
+	help="path to Caffe pre-trained model")
+ap.add_argument("-c", "--points", type=str, required=True,
+	help="path to cluster center points")
+args = vars(ap.parse_args())
 
-# Models Path
-prototxt = r'model/colorization_deploy_v2.prototxt'
-model = r'model/colorization_release_v2.caffemodel'
-points = r'model/pts_in_hull.npy'
 
 print("[INFO] loading model...")
-net = cv2.dnn.readNetFromCaffe(prototxt, model)
-pts = np.load(points)
+net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
+pts = np.load(args["points"])
 # add the cluster centers as 1x1 convolutions to the model
 class8 = net.getLayerId("class8_ab")
 conv8 = net.getLayerId("conv8_313_rh")
@@ -37,7 +31,7 @@ net.getLayer(conv8).blobs = [np.full([1, 313], 2.606, dtype="float32")]
 # load the input image from disk, scale the pixel intensities to the
 # range [0, 1], and then convert the image from the BGR to Lab color
 # space
-image = cv2.imread(imagePath)
+image = cv2.imread(args["image"])
 scaled = image.astype("float32") / 255.0
 lab = cv2.cvtColor(scaled, cv2.COLOR_BGR2LAB)
 
